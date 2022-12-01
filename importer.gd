@@ -46,6 +46,9 @@ func get_option_visibility(option: String, options: Dictionary) -> bool:
 
 
 func import(source_file: String, save_path: String, options: Dictionary, platform_variants: Array, gen_files: Array) -> int:
+    var file := File.new()
+    assert(file.open(source_file, File.READ) == OK, "failed to open %s" % source_file)
+    
     var stream := AudioStreamSample.new()
 
     return ResourceSaver.save("%s.%s" % [save_path, get_save_extension()], stream)
