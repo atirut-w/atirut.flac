@@ -48,6 +48,7 @@ func get_option_visibility(option: String, options: Dictionary) -> bool:
 func import(source_file: String, save_path: String, options: Dictionary, platform_variants: Array, gen_files: Array) -> int:
     var file := File.new()
     assert(file.open(source_file, File.READ) == OK, "failed to open %s" % source_file)
+    assert(file.get_buffer(4).get_string_from_ascii() == "fLaC", "not an FLAC stream")
     
     var stream := AudioStreamSample.new()
 
