@@ -61,7 +61,7 @@ func import(source_file: String, save_path: String, options: Dictionary, platfor
 		match header.block_type:
 			BlockHeader.BlockType.STREAMINFO:
 				var info := StreamInfo.new(file)
-				print(info.channel_count)
+				print(info.bits_per_sample)
 
 		file.seek(start + header.length)
 		if header.is_last:
@@ -104,6 +104,7 @@ class StreamInfo:
 
 	var sample_rate: int
 	var channel_count: int
+	var bits_per_sample: int
 
 
 	func _init(file: File):
@@ -122,3 +123,11 @@ class StreamInfo:
 		sample_rate &= 0x000ffff0
 		sample_rate >>= 4
 		assert(sample_rate > 0, "invalid sample rate")
+
+		file.seek(file.get_position() - 1) # The last byte still have some more stuff
+		channel_count = ((file.get_8() & 0xe) >> 1) + 1
+
+		file.seek(file.get_position() - 1) # Still even more stuff! Thanks, Xiph.org
+		bits_per_sample = (file.get_8() & 1) << 4
+		bits_per_sample |= (file.get_8() & 0xf0) >> 4
+		bits_per_sample = bits_per_sample + 1
