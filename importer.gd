@@ -52,20 +52,26 @@ func import(source_file: String, save_path: String, options: Dictionary, platfor
 	file.endian_swap = true
 
 	var stream := AudioStreamSample.new()
+	var info: StreamInfo
 
 	while true:
 		var header := BlockHeader.new(file)
 		var start := file.get_position()
-		print("Found meta block type %d" % header.block_type)
 
 		match header.block_type:
 			BlockHeader.BlockType.STREAMINFO:
-				var info := StreamInfo.new(file)
-				print(info.bits_per_sample)
+				info = StreamInfo.new(file)
 
 		file.seek(start + header.length)
 		if header.is_last:
 			break
+	
+	stream.format = (
+		AudioStreamSample.FORMAT_8_BITS if info.bits_per_sample == 8
+		else AudioStreamSample.FORMAT_16_BITS # TODO: Error
+	)
+	stream.mix_rate = info.sample_rate
+	stream.stereo = info.channel_count > 1
 
 	return ResourceSaver.save("%s.%s" % [save_path, get_save_extension()], stream)
 
